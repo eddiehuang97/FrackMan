@@ -28,8 +28,8 @@ int StudentWorld::init() {
 	int randX, randY;
 	for (int i = 0; i < (getLevel() / 2 + 2 < 6 ? getLevel() / 2 + 2 : 6); i++) {
 		do {
-			randX = rand() % 61;
-			randY = rand() % 37 + 20;
+			randX = rand() % 60;
+			randY = rand() % 36 + 20;
 		} while (!withinAllowableDistance(randX, randY));
 		actorList.push_front(new Boulder(randX, randY));
 		for (int j = 0; j < 4; j++)
@@ -38,8 +38,8 @@ int StudentWorld::init() {
 	}
 	for (int i = 0; i < (2 + getLevel() < 20 ? 2 + getLevel() : 20); i++) {
 		do {
-			randX = rand() % 61;
-			randY = rand() % 57;
+			randX = rand() % 60;
+			randY = rand() % 56;
 		} while (!withinAllowableDistance(randX, randY));
 		actorList.push_front(new Barrel(randX, randY));
 	}
@@ -62,6 +62,7 @@ int StudentWorld::init() {
 }
 
 int StudentWorld::move() {
+	int randX, randY;
 	setDisplayText();
 	fMan->doSomething();
 	if (fMan->getX() <= 60 && fMan->getY() <= 60) {
@@ -81,8 +82,18 @@ int StudentWorld::move() {
 		(*it)->doSomething();
 		it++;
 	}
-	if (rand() % (getLevel() * 25 + 299) == 0) {
-		actorList.push_front(new SonarKit(0, 60, (100 > 300 - 10 * getLevel() ? 100 : 300 - 10 * getLevel())));
+	if (rand() % (getLevel() * 25 + 300) == 0) {
+		if (rand() % 5 == 0) {
+			actorList.push_front(new SonarKit(0, 60, (100 > 300 - 10 * getLevel() ? 100 : 300 - 10 * getLevel())));
+		}
+		else {
+			do {
+				randX = rand() % 60;
+				randY = rand() % 56;
+			} while (!noBoulderOrDirt(randX, randY));
+			actorList.push_front(new WaterPool(randX, randY, (100 > 300 - 10 * getLevel() ? 100 : 300 - 10 * getLevel())));
+		}
+		(*actorList.begin())->setWorld(*this);
 	}
 	it = actorList.begin();
 	while (it != actorList.end()) {
@@ -203,7 +214,7 @@ bool StudentWorld::noBoulderOrDirt(int x, int y) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (x + i < 64 && y + j < 60 && dirtArray[x + i][y + j]->getVisible())
-					return false;
+				return false;
 		}
 	}
 	return true;
@@ -230,10 +241,14 @@ void StudentWorld::useSonar(int x, int y) {
 	list<Actor*>::iterator it;
 	it = actorList.begin();
 	while (it != actorList.end()) {
-		if (sqrt(pow((*it)->getX() - x, 2) + pow((*it)->getY() - y, 2)) <= 16)
+		if (sqrt(pow((*it)->getX() - x, 2) + pow((*it)->getY() - y, 2)) <= 12)
 			(*it)->setVisible(true);
 		it++;
 	}
+}
+
+void StudentWorld::incWater() {
+	fMan->incWater();
 }
 
 void StudentWorld::setDisplayText()

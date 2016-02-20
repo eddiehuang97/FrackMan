@@ -41,6 +41,7 @@ public:
 	void dropNugget(int x, int y);
 	void incSonar();
 	void useSonar(int x, int y);
+	void incWater();
 	// ~StudentWorld(); // cause if you close the program instead of pressing q you don't want a memory leak
 
 private:

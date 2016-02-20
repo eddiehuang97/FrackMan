@@ -51,6 +51,7 @@ public:
 	void decGold();
 	void incSonar();
 	void decSonar();
+	void incWater();
 	virtual ~FrackMan();
 private:
 	int hitPoints;
@@ -125,6 +126,15 @@ public:
 	void doSomething();
 	virtual ~SonarKit();
 };
+
+class WaterPool : public Goodie
+{
+public:
+	WaterPool(int x, int y, int life);
+	void doSomething();
+	virtual ~WaterPool();
+};
+
 
 
 #endif // ACTOR_H_

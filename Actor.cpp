@@ -109,6 +109,7 @@ void FrackMan::doSomething() {
 						getWorld()->createSquirt(getX(), getY() - 4, down);
 						break;
 					}
+					getWorld()->playSound(SOUND_PLAYER_SQUIRT);
 					waterUnits--;
 				}
 				break;
@@ -123,6 +124,9 @@ void FrackMan::doSomething() {
 					getWorld()->playSound(SOUND_SONAR);
 					decSonar();
 				}
+				break;
+			case KEY_PRESS_ESCAPE:
+				setAlive(false);
 				break;
 			default:
 				break;
@@ -160,6 +164,9 @@ void FrackMan::incSonar() {
 }
 void FrackMan::decSonar() {
 	sonarCharges--;
+}
+void FrackMan::incWater() {
+	waterUnits += 5;
 }
 
 FrackMan::~FrackMan() {}
@@ -336,5 +343,20 @@ void SonarKit::doSomething() {
 	}
 }
 SonarKit::~SonarKit() {}
+
+WaterPool::WaterPool(int x, int y, int life) 
+	: Goodie(IID_WATER_POOL, x, y, false) {
+	setVisible(true);
+}
+void WaterPool::doSomething() {
+	Goodie::doSomething();
+	doTempStuff();
+	if (!checkAlive()) {
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(100);
+		getWorld()->incWater();
+	}
+}
+WaterPool::~WaterPool() {}
 
 
