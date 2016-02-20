@@ -47,6 +47,10 @@ public:
 	int getWaterUnits();
 	int getSonarCharges();
 	int getGoldNuggets();
+	void incGold();
+	void decGold();
+	void incSonar();
+	void decSonar();
 	virtual ~FrackMan();
 private:
 	int hitPoints;
@@ -68,6 +72,58 @@ private:
 	bool isStable;
 	int waitTime;
 	bool isFalling;
+};
+
+class Squirt : public Actor
+{
+public:
+	Squirt(int x, int y, Direction dir);
+	void doSomething();
+	void getAnnoyed();
+	virtual ~Squirt();
+private:
+	int lifeTime;
+};
+
+class Goodie : public Actor
+{
+public:
+	Goodie(int ID, int x, int y, bool permanent, int life);
+	virtual void pickUp();
+	virtual void doSomething();
+	void getAnnoyed();
+	void doTempStuff();
+	bool isPickedUp();
+	bool getState();
+	virtual ~Goodie();
+private:
+	bool pickedUp;
+	bool isPermanent;
+	int lifeRemaining;
+};
+
+class Barrel : public Goodie
+{
+public:
+	Barrel(int x, int y);
+	void doSomething();
+	virtual ~Barrel();
+};
+
+class Nugget : public Goodie
+{
+public:
+	Nugget(int x, int y, bool state);
+	void doSomething();
+	virtual ~Nugget();
+};
+
+class SonarKit : public Goodie
+{
+public:
+	SonarKit(int x, int y, int life);
+	void doSomething();
+	virtual ~SonarKit();
 };
 
 

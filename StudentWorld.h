@@ -32,7 +32,15 @@ public:
 
 	bool dirtUnderneathGone(int x, int y);
 	bool boulderCollision(int x, int y);
-
+	bool itemNear(int x, int y);
+	bool itemCollision(int x, int y);
+	void createSquirt(int x, int y, GraphObject::Direction dir);
+	bool noBoulderOrDirt(int x, int y);
+	void decOil();
+	void incGold();
+	void dropNugget(int x, int y);
+	void incSonar();
+	void useSonar(int x, int y);
 	// ~StudentWorld(); // cause if you close the program instead of pressing q you don't want a memory leak
 
 private:
@@ -42,6 +50,7 @@ private:
 	bool withinAllowableDistance(int x, int y);
 	void setDisplayText();
 	std::string convertIntDisplay(int input, int digits);
+	unsigned int oilLeft;
 };
 
 #endif // STUDENTWORLD_H_

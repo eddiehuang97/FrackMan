@@ -15,6 +15,7 @@ GameWorld* createStudentWorld(string assetDir)
 int StudentWorld::init() { 
 	fMan = new FrackMan();
 	fMan->setWorld(*this);
+	oilLeft = (2 + getLevel() < 20 ? 2 + getLevel() : 20);
 	for (int i = 0; i < 64; i++) {
 		for (int j = 0; j < 60; j++) {
 			dirtArray[i][j] = new Dirt(i, j);
@@ -34,6 +35,20 @@ int StudentWorld::init() {
 		for (int j = 0; j < 4; j++)
 			for (int k = 0; k < 4; k++)
 				dirtArray[randX + j][randY + k]->setVisible(false);
+	}
+	for (int i = 0; i < (2 + getLevel() < 20 ? 2 + getLevel() : 20); i++) {
+		do {
+			randX = rand() % 61;
+			randY = rand() % 57;
+		} while (!withinAllowableDistance(randX, randY));
+		actorList.push_front(new Barrel(randX, randY));
+	}
+	for (int i = 0; i < (5 - getLevel()/2 > 2 ? 5 - getLevel() / 2 : 2); i++) {
+		do {
+			randX = rand() % 61;
+			randY = rand() % 57;
+		} while (!withinAllowableDistance(randX, randY));
+		actorList.push_front(new Nugget(randX, randY, true));
 	}
 /*	actorList.push_front(new Boulder(15, 40));
 	for (int j = 0; j < 4; j++)
@@ -66,6 +81,9 @@ int StudentWorld::move() {
 		(*it)->doSomething();
 		it++;
 	}
+	if (rand() % (getLevel() * 25 + 299) == 0) {
+		actorList.push_front(new SonarKit(0, 60, (100 > 300 - 10 * getLevel() ? 100 : 300 - 10 * getLevel())));
+	}
 	it = actorList.begin();
 	while (it != actorList.end()) {
 		if (!(*it)->checkAlive()) {
@@ -76,6 +94,10 @@ int StudentWorld::move() {
 		else {
 			it++;
 		}
+	}
+	if (oilLeft <= 0) {
+		playSound(SOUND_FINISHED_LEVEL);
+		return GWSTATUS_FINISHED_LEVEL;
 	}
 	if (!fMan->checkAlive()) {
 		decLives();
@@ -119,12 +141,14 @@ bool StudentWorld::noBoulder(int x, int y) {
 	it = actorList.begin();
 	while (it != actorList.end()) {
 		if (!(*it)->canIntersect())
-			for (int i = 0; i < 4; i++)
+			if (sqrt(pow((*it)->getX() - x, 2) + pow((*it)->getY() - y, 2)) <= 3)
+				return false;
+/*			for (int i = 0; i < 4; i++)
 				for (int j = 0; j < 4; j++)
 					for (int k = 0; k < 4; k++)
 						for (int l = 0; l < 4; l++)
 							if (x + k == (*it)->getX() + i && y + l == (*it)->getY() + j)
-								return false;
+								return false;*/
 		it++;
 	}
 	return true;
@@ -153,6 +177,64 @@ bool StudentWorld::boulderCollision(int x, int y) {
 	return false;
 }
 
+bool StudentWorld::itemNear(int x, int y) {
+	if (sqrt(pow(fMan->getX() - x, 2) + pow(fMan->getY() - y, 2)) <= 4) {
+		return true;
+	}
+	return false;
+}
+
+bool StudentWorld::itemCollision(int x, int y) {
+	if (sqrt(pow(fMan->getX() - x, 2) + pow(fMan->getY() - y, 2)) <= 3) {
+		return true;
+	}
+	return false;
+}
+
+void StudentWorld::createSquirt(int x, int y, GraphObject::Direction dir) {
+	actorList.push_front(new Squirt(x, y, dir));
+	(*actorList.begin())->setWorld(*this);
+}
+
+bool StudentWorld::noBoulderOrDirt(int x, int y) {
+	if (!noBoulder(x, y)) {
+		return false;
+	}
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x + i < 64 && y + j < 60 && dirtArray[x + i][y + j]->getVisible())
+					return false;
+		}
+	}
+	return true;
+}
+
+void StudentWorld::decOil() {
+	oilLeft--;
+}
+
+void StudentWorld::incGold() {
+	fMan->incGold();
+}
+
+void StudentWorld::dropNugget(int x, int y) {
+	actorList.push_front(new Nugget(x, y, false));
+	fMan->decGold();
+}
+
+void StudentWorld::incSonar() {
+	fMan->incSonar();
+}
+
+void StudentWorld::useSonar(int x, int y) {
+	list<Actor*>::iterator it;
+	it = actorList.begin();
+	while (it != actorList.end()) {
+		if (sqrt(pow((*it)->getX() - x, 2) + pow((*it)->getY() - y, 2)) <= 16)
+			(*it)->setVisible(true);
+		it++;
+	}
+}
 
 void StudentWorld::setDisplayText()
 {
@@ -162,25 +244,25 @@ void StudentWorld::setDisplayText()
 	}
 	int level = getLevel();
 	if (level > 99) {
-		level == 99;
+		level = 99;
 	}
 	int lives = getLives();
 	int health = fMan->getHitPoints();
 	int squirts = fMan->getWaterUnits();
 	if (squirts > 99) {
-		squirts == 99;
+		squirts = 99;
 	}
 	int gold = fMan->getGoldNuggets();
 	if (gold > 99) {
-		gold == 99;
+		gold = 99;
 	}
 	int sonar = fMan->getSonarCharges();
 	if (sonar > 99) {
-		sonar == 99;
+		sonar = 99;
 	}
-	int barrelsLeft = 20; 
+	int barrelsLeft = oilLeft; 
 	if (barrelsLeft > 99) {
-		barrelsLeft == 99;
+		barrelsLeft = 99;
 	}
 	bool firstNonZeroReached = false;
 	string s = "Scr: ";
